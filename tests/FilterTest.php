@@ -326,14 +326,11 @@ class FilterTest extends TestCase
     }
     
     
-    protected function createQueryFromFilterRequest(array $filters): QueryBuilder
+    protected function createQueryFromFilterRequest(array $filterRules): QueryBuilder
     {
-        $filterRules = collect($filters)->each(function($filter, $key){
-            return '{"field":"' . $filter["field"] . '", "value": "' . $filter["value"]. '"},';
-        });
-        
+        $filters = collect($filterRules);
         $request = new Request([
-        'filterRules' => "$filterRules",
+        'filterRules' => "$filters",
         ]);
         
         return QueryBuilder::for(TestModel::class, $request);
