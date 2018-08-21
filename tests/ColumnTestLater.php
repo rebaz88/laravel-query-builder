@@ -19,7 +19,7 @@ class ColumnTest extends TestCase
         $this->modelTableName = $this->model->getTable();
     }
 
-    /** @test */
+    /** later */
     public function it_can_fetch_all_columns_if_none_is_given()
     {
         $queryBuilder = QueryBuilder::for(TestModel::class)->toSql();
@@ -29,7 +29,7 @@ class ColumnTest extends TestCase
         $this->assertEquals($expected, $queryBuilder);
     }
 
-    /** @test */
+    /** later */
     public function it_can_fetch_only_required_columns()
     {
         $request = new Request([

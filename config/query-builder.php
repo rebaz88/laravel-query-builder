@@ -10,7 +10,7 @@ return [
     'parameters' => [
         'include' => 'include',
 
-        'filter' => 'filter',
+        'filter' => 'filterRules',
 
         'sort' => 'sort',
 

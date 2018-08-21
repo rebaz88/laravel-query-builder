@@ -4,6 +4,8 @@ namespace Spatie\QueryBuilder;
 
 use Illuminate\Database\Eloquent\Builder;
 use Spatie\QueryBuilder\Filters\FiltersExact;
+use Spatie\QueryBuilder\Filters\FiltersGreaterThan;
+use Spatie\QueryBuilder\Filters\FiltersLessThan;
 use Spatie\QueryBuilder\Filters\FiltersScope;
 use Spatie\QueryBuilder\Filters\FiltersPartial;
 use Spatie\QueryBuilder\Filters\Filter as CustomFilter;
@@ -32,6 +34,15 @@ class Filter
     public static function exact(string $property) : self
     {
         return new static($property, FiltersExact::class);
+    }
+    public static function gt(string $property) : self
+    {
+        return new static($property, FiltersGreaterThan::class);
+    }
+
+    public static function lt(string $property) : self
+    {
+        return new static($property, FiltersLessThan::class);
     }
 
     public static function partial(string $property) : self

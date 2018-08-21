@@ -51,43 +51,47 @@ class QueryBuilderServiceProvider extends ServiceProvider
 
         Request::macro('filters', function ($filter = null) {
             $filterParts = $this->query(
-                config('query-builder.parameters.filter')
+            config('query-builder.parameters.filter')
             );
-
+            
             if (! $filterParts) {
                 return collect();
             }
-
-            $filters = collect($filterParts)->filter(function ($filter) {
+            
+            $filters = collect(json_decode($filterParts, true))->map(function($filter) {
+                return [$filter["field"] => $filter["value"]];
+            })->collapse();
+            
+            $filters = collect($filters)->filter(function ($filter) {
                 return ! is_null($filter);
             });
-
+            
             $filtersMapper = function ($value) {
                 if (is_array($value)) {
                     return collect($value)->map($this)->all();
                 }
-
+                
                 if (str_contains($value, ',')) {
                     return explode(',', $value);
                 }
-
+                
                 if ($value === 'true') {
                     return true;
                 }
-
+                
                 if ($value === 'false') {
                     return false;
                 }
-
+                
                 return $value;
             };
-
+            
             $filters = $filters->map($filtersMapper->bindTo($filtersMapper));
-
+                        
             if (is_null($filter)) {
                 return $filters;
             }
-
+            
             return $filters->get(strtolower($filter));
         });
 
