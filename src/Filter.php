@@ -3,12 +3,12 @@
 namespace Spatie\QueryBuilder;
 
 use Illuminate\Database\Eloquent\Builder;
+use Spatie\QueryBuilder\Filters\Filter as CustomFilter;
 use Spatie\QueryBuilder\Filters\FiltersExact;
 use Spatie\QueryBuilder\Filters\FiltersGreaterThan;
 use Spatie\QueryBuilder\Filters\FiltersLessThan;
-use Spatie\QueryBuilder\Filters\FiltersScope;
 use Spatie\QueryBuilder\Filters\FiltersPartial;
-use Spatie\QueryBuilder\Filters\Filter as CustomFilter;
+use Spatie\QueryBuilder\Filters\FiltersScope;
 
 class Filter
 {
@@ -31,31 +31,31 @@ class Filter
         ($filterClass)($builder, $value, $this->property);
     }
 
-    public static function exact(string $property) : self
+    public static function exact(string $property): self
     {
         return new static($property, FiltersExact::class);
     }
-    public static function gt(string $property) : self
+    public static function gt(string $property): self
     {
         return new static($property, FiltersGreaterThan::class);
     }
 
-    public static function lt(string $property) : self
+    public static function lt(string $property): self
     {
         return new static($property, FiltersLessThan::class);
     }
 
-    public static function partial(string $property) : self
+    public static function partial(string $property): self
     {
         return new static($property, FiltersPartial::class);
     }
 
-    public static function scope(string $property) : self
+    public static function scope(string $property): self
     {
         return new static($property, FiltersScope::class);
     }
 
-    public static function custom(string $property, $filterClass) : self
+    public static function custom(string $property, $filterClass): self
     {
         return new static($property, $filterClass);
     }

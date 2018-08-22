@@ -5,10 +5,10 @@ namespace Spatie\QueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
-use Spatie\QueryBuilder\Exceptions\InvalidSortQuery;
 use Spatie\QueryBuilder\Exceptions\InvalidAppendQuery;
 use Spatie\QueryBuilder\Exceptions\InvalidFilterQuery;
 use Spatie\QueryBuilder\Exceptions\InvalidIncludeQuery;
+use Spatie\QueryBuilder\Exceptions\InvalidSortQuery;
 
 class QueryBuilder extends Builder
 {
@@ -36,7 +36,7 @@ class QueryBuilder extends Builder
     /** @var \Illuminate\Http\Request */
     protected $request;
 
-    public function __construct(Builder $builder, ? Request $request = null)
+    public function __construct(Builder $builder, ?Request $request = null)
     {
         parent::__construct(clone $builder->getQuery());
 
@@ -81,8 +81,7 @@ class QueryBuilder extends Builder
      *
      * @return \Spatie\QueryBuilder\QueryBuilder
      */
-    public static function for($baseQuery, ? Request $request = null) : self
-    {
+    public static function for ($baseQuery, ?Request $request = null): self {
         if (is_string($baseQuery)) {
             $baseQuery = ($baseQuery)::query();
         }
@@ -90,7 +89,7 @@ class QueryBuilder extends Builder
         return new static($baseQuery, $request ?? request());
     }
 
-    public function allowedFilters($filters) : self
+    public function allowedFilters($filters): self
     {
         $filters = is_array($filters) ? $filters : func_get_args();
         $this->allowedFilters = collect($filters)->map(function ($filter) {
@@ -108,7 +107,7 @@ class QueryBuilder extends Builder
         return $this;
     }
 
-    public function defaultSort($sort) : self
+    public function defaultSort($sort): self
     {
         $this->defaultSort = $sort;
 
@@ -117,16 +116,16 @@ class QueryBuilder extends Builder
         return $this;
     }
 
-    public function allowedSorts($sorts) : self
+    public function allowedSorts($sorts): self
     {
         $sorts = is_array($sorts) ? $sorts : func_get_args();
-        if (! $this->request->sorts()) {
+        if (!$this->request->sorts()) {
             return $this;
         }
 
         $this->allowedSorts = collect($sorts);
 
-        if (! $this->allowedSorts->contains('*')) {
+        if (!$this->allowedSorts->contains('*')) {
             $this->guardAgainstUnknownSorts();
         }
 
@@ -135,7 +134,7 @@ class QueryBuilder extends Builder
         return $this;
     }
 
-    public function allowedIncludes($includes) : self
+    public function allowedIncludes($includes): self
     {
         $includes = is_array($includes) ? $includes : func_get_args();
 
@@ -158,7 +157,7 @@ class QueryBuilder extends Builder
         return $this;
     }
 
-    public function allowedAppends($appends) : self
+    public function allowedAppends($appends): self
     {
         $appends = is_array($appends) ? $appends : func_get_args();
 
@@ -175,14 +174,17 @@ class QueryBuilder extends Builder
     {
         $this->fields = $this->request->fields();
 
-        $modelTableName = $this->getModel()->getTable();
-        $modelFields = $this->fields->get($modelTableName);
+        if($this->fields->count()) {
 
-        if (! $modelFields) {
-            $modelFields = '*';
+            $modelTableName = $this->getModel()->getTable();
+            $modelFields = $this->fields->get($modelTableName);
+
+            if (!$modelFields) {
+                $modelFields = '*';
+            }
+
+            $this->select($this->prependFieldsWithTableName(explode(',', $modelFields), $modelTableName));
         }
-
-        $this->select($this->prependFieldsWithTableName(explode(',', $modelFields), $modelTableName));
     }
 
     protected function prependFieldsWithTableName(array $fields, string $tableName): array
@@ -196,7 +198,7 @@ class QueryBuilder extends Builder
     {
         $fields = $this->fields->get($relation);
 
-        if (! $fields) {
+        if (!$fields) {
             return [];
         }
 
@@ -212,7 +214,7 @@ class QueryBuilder extends Builder
         });
     }
 
-    protected function findFilter(string $property) : ? Filter
+    protected function findFilter(string $property): ?Filter
     {
         return $this->allowedFilters
             ->first(function (Filter $filter) use ($property) {
@@ -234,7 +236,7 @@ class QueryBuilder extends Builder
 
     protected function filterDuplicates(Collection $sorts): Collection
     {
-        if (! is_array($orders = $this->getQuery()->orders)) {
+        if (!is_array($orders = $this->getQuery()->orders)) {
             return $sorts;
         }
 

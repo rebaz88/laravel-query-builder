@@ -31,7 +31,7 @@ class QueryBuilderTest extends TestCase
         $modelTableName = (new TestModel)->getTable();
 
         $this->assertEquals(
-            $eloquentBuilder->select("$modelTableName.*")->toSql(),
+            $eloquentBuilder->select("*")->toSql(),
             $queryBuilder->toSql()
         );
     }
@@ -114,7 +114,7 @@ class QueryBuilderTest extends TestCase
         $modelTableName = (new TestModel)->getTable();
 
         $expectedQuery = TestModel::query()
-                                  ->select("$modelTableName.*")
+                                  ->select("*")
                                   ->where('name', 'john')
                                   ->toSql();
 

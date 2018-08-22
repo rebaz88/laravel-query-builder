@@ -34,7 +34,7 @@ class SortTest extends TestCase
             ->createQueryFromSortRequest('name')
             ->get();
 
-        $this->assertQueryExecuted('select "test_models".* from "test_models" order by "name" asc');
+        $this->assertQueryExecuted('select * from "test_models" order by "name" asc');
         $this->assertSortedAscending($sortedModels, 'name');
     }
 
@@ -45,7 +45,7 @@ class SortTest extends TestCase
             ->createQueryFromSortRequest('-name')
             ->get();
 
-        $this->assertQueryExecuted('select "test_models".* from "test_models" order by "name" desc');
+        $this->assertQueryExecuted('select * from "test_models" order by "name" desc');
         $this->assertSortedDescending($sortedModels, 'name');
     }
 
@@ -86,7 +86,7 @@ class SortTest extends TestCase
             ->allowedSorts('name')
             ->toSql();
 
-        $eloquentQuery = TestModel::query()->select("{$this->modelTableName}.*")->toSql();
+        $eloquentQuery = TestModel::query()->select("*")->toSql();
 
         $this->assertEquals($eloquentQuery, $builderQuery);
     }
@@ -99,7 +99,7 @@ class SortTest extends TestCase
             ->defaultSort('name')
             ->get();
 
-        $this->assertQueryExecuted('select "test_models".* from "test_models" order by "name" asc');
+        $this->assertQueryExecuted('select * from "test_models" order by "name" asc');
         $this->assertSortedAscending($sortedModels, 'name');
     }
 
@@ -112,7 +112,7 @@ class SortTest extends TestCase
             ->allowedSorts('id', 'name')
             ->get();
 
-        $this->assertQueryExecuted('select "test_models".* from "test_models" order by "name" asc');
+        $this->assertQueryExecuted('select * from "test_models" order by "name" asc');
         $this->assertSortedAscending($sortedModels, 'name');
     }
 
@@ -138,7 +138,7 @@ class SortTest extends TestCase
             ->get();
 
         $expected = TestModel::orderBy('name')->orderByDesc('id');
-        $this->assertQueryExecuted('select "test_models".* from "test_models" order by "name" asc, "id" desc');
+        $this->assertQueryExecuted('select * from "test_models" order by "name" asc, "id" desc');
         $this->assertEquals($expected->pluck('id'), $sortedModels->pluck('id'));
     }
 
