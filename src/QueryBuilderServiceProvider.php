@@ -101,12 +101,32 @@ class QueryBuilderServiceProvider extends ServiceProvider
             return $filters->get(strtolower($filter));
         });
 
-        Request::macro('sort', function ($default = null) {
-            return $this->query(config('query-builder.parameters.sort'), $default);
-        });
-
         Request::macro('fields', function ($default = null) {
             return collect($this->query(config('query-builder.parameters.fields'), $default));
+        });
+
+        Request::macro('order', function ($default = null) {
+            return $this->query(config('query-builder.parameters.order'), $default);
+        });
+
+        Request::macro('orders', function ($default = null) {
+            $orderParts = $this->order();
+
+            if (!is_array($orderParts)) {
+                $orderParts = explode(',', $orderParts);
+            }
+
+            $orders = collect($orderParts)->filter();
+
+            if ($orders->isNotEmpty()) {
+                return $orders;
+            }
+
+            return collect($default)->filter();
+        });
+
+        Request::macro('sort', function ($default = null) {
+            return $this->query(config('query-builder.parameters.sort'), $default);
         });
 
         Request::macro('sorts', function ($default = null) {
@@ -124,5 +144,6 @@ class QueryBuilderServiceProvider extends ServiceProvider
 
             return collect($default)->filter();
         });
+
     }
 }

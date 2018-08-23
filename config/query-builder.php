@@ -14,6 +14,8 @@ return [
 
         'sort' => 'sort',
 
+        'order' => 'order',
+
         'fields' => 'fields',
 
         'append' => 'append',

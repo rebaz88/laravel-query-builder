@@ -4,10 +4,10 @@ namespace Spatie\QueryBuilder\Tests;
 
 use DB;
 use Illuminate\Http\Request;
-use Spatie\QueryBuilder\QueryBuilder;
-use Spatie\QueryBuilder\Tests\Models\TestModel;
 use Spatie\QueryBuilder\Exceptions\InvalidSortQuery;
+use Spatie\QueryBuilder\QueryBuilder;
 use Spatie\QueryBuilder\Tests\Concerns\AssertsCollectionSorting;
+use Spatie\QueryBuilder\Tests\Models\TestModel;
 
 class SortTest extends TestCase
 {
@@ -31,7 +31,7 @@ class SortTest extends TestCase
     public function it_can_sort_a_collection_ascending()
     {
         $sortedModels = $this
-            ->createQueryFromSortRequest('name')
+            ->createQueryFromSortRequest('name', 'asc')
             ->get();
 
         $this->assertQueryExecuted('select * from "test_models" order by "name" asc');
@@ -42,7 +42,7 @@ class SortTest extends TestCase
     public function it_can_sort_a_collection_descending()
     {
         $sortedModels = $this
-            ->createQueryFromSortRequest('-name')
+            ->createQueryFromSortRequest('name', 'desc')
             ->get();
 
         $this->assertQueryExecuted('select * from "test_models" order by "name" desc');
@@ -53,7 +53,18 @@ class SortTest extends TestCase
     public function it_can_guard_against_sorts_that_are_not_allowed()
     {
         $sortedModels = $this
-            ->createQueryFromSortRequest('name')
+            ->createQueryFromSortRequest('name', 'asc')
+            ->allowedSorts('name')
+            ->get();
+
+        $this->assertSortedAscending($sortedModels, 'name');
+    }
+
+    /** @test */
+    public function it_can_guard_against_unknown_order_type()
+    {
+        $sortedModels = $this
+            ->createQueryFromSortRequest('name', 'unknown order type')
             ->allowedSorts('name')
             ->get();
 
@@ -66,7 +77,7 @@ class SortTest extends TestCase
         $this->expectException(InvalidSortQuery::class);
 
         $this
-            ->createQueryFromSortRequest('name')
+            ->createQueryFromSortRequest('name', 'asc')
             ->allowedSorts('id');
     }
 
@@ -82,7 +93,7 @@ class SortTest extends TestCase
     /** @test */
     public function it_wont_sort_if_no_sort_query_parameter_is_given()
     {
-        $builderQuery = QueryBuilder::for(TestModel::class, new Request())
+        $builderQuery = QueryBuilder::for(TestModel::class, new Request()) 
             ->allowedSorts('name')
             ->toSql();
 
@@ -94,7 +105,7 @@ class SortTest extends TestCase
     /** @test */
     public function it_uses_default_sort_parameter()
     {
-        $sortedModels = QueryBuilder::for(TestModel::class, new Request())
+        $sortedModels = QueryBuilder::for(TestModel::class, new Request()) 
             ->allowedSorts('name')
             ->defaultSort('name')
             ->get();
@@ -108,7 +119,7 @@ class SortTest extends TestCase
     {
         DB::enableQueryLog();
         $sortedModels = $this
-            ->createQueryFromSortRequest('name')
+            ->createQueryFromSortRequest('name', 'asc')
             ->allowedSorts('id', 'name')
             ->get();
 
@@ -120,7 +131,7 @@ class SortTest extends TestCase
     public function it_can_allow_multiple_sort_parameters_as_an_array()
     {
         $sortedModels = $this
-            ->createQueryFromSortRequest('name')
+            ->createQueryFromSortRequest('name', 'asc')
             ->allowedSorts(['id', 'name'])
             ->get();
 
@@ -133,7 +144,7 @@ class SortTest extends TestCase
         factory(TestModel::class, 3)->create(['name' => 'foo']);
 
         $sortedModels = $this
-            ->createQueryFromSortRequest('name,-id')
+            ->createQueryFromSortRequest('name,id', 'asc,desc')
             ->allowedSorts('name', 'id')
             ->get();
 
@@ -142,10 +153,11 @@ class SortTest extends TestCase
         $this->assertEquals($expected->pluck('id'), $sortedModels->pluck('id'));
     }
 
-    protected function createQueryFromSortRequest(string $sort): QueryBuilder
+    protected function createQueryFromSortRequest(string $sort, string $order): QueryBuilder
     {
         $request = new Request([
             'sort' => $sort,
+            'order' => $order,
         ]);
 
         return QueryBuilder::for(TestModel::class, $request);

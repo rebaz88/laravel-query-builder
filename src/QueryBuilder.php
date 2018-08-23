@@ -2,9 +2,9 @@
 
 namespace Spatie\QueryBuilder;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Database\Eloquent\Builder;
 use Spatie\QueryBuilder\Exceptions\InvalidAppendQuery;
 use Spatie\QueryBuilder\Exceptions\InvalidFilterQuery;
 use Spatie\QueryBuilder\Exceptions\InvalidIncludeQuery;
@@ -20,6 +20,9 @@ class QueryBuilder extends Builder
 
     /** @var \Illuminate\Support\Collection */
     protected $allowedSorts;
+
+    /** @var \Illuminate\Support\Collection */
+    protected $sortOrders;
 
     /** @var \Illuminate\Support\Collection */
     protected $allowedIncludes;
@@ -174,7 +177,7 @@ class QueryBuilder extends Builder
     {
         $this->fields = $this->request->fields();
 
-        if($this->fields->count()) {
+        if ($this->fields->count()) {
 
             $modelTableName = $this->getModel()->getTable();
             $modelFields = $this->fields->get($modelTableName);
@@ -224,13 +227,14 @@ class QueryBuilder extends Builder
 
     protected function addSortsToQuery(Collection $sorts)
     {
+        $orders = $this->request->orders();
         $this->filterDuplicates($sorts)
-            ->each(function (string $sort) {
-                $descending = $sort[0] === '-';
+            ->each(function (string $sort) use ($orders) {
 
-                $key = ltrim($sort, '-');
+                $order = $orders->shift();
+                $order = in_array($order, ['asc', 'desc']) ? $order : 'asc';
 
-                $this->orderBy($key, $descending ? 'desc' : 'asc');
+                $this->orderBy($sort, $order);
             });
     }
 
@@ -240,10 +244,16 @@ class QueryBuilder extends Builder
             return $sorts;
         }
 
-        return $sorts->reject(function (string $sort) use ($orders) {
+        $requestOrders = $this->request->orders();
+
+        return $sorts->reject(function (string $sort) use ($orders, $requestOrders) {
+
+            $requestOrder = $requestOrders->shift();
+            $requestOrder = in_array($requestOrder, ['asc', 'desc']) ? $requestOrder : 'asc';
+
             $toSort = [
-                'column' => ltrim($sort, '-'),
-                'direction' => ($sort[0] === '-') ? 'desc' : 'asc',
+                'column' => $sort,
+                'direction' => $requestOrder,
             ];
             foreach ($orders as $order) {
                 if ($order === $toSort) {
@@ -307,9 +317,10 @@ class QueryBuilder extends Builder
 
     protected function guardAgainstUnknownSorts()
     {
-        $sorts = $this->request->sorts()->map(function ($sort) {
-            return ltrim($sort, '-');
-        });
+        // $sorts = $this->request->sorts()->map(function ($sort) {
+        //     return ltrim($sort, '-');
+        // });
+        $sorts = $this->request->sorts();
 
         $diff = $sorts->diff($this->allowedSorts);
 
