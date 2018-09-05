@@ -7,6 +7,7 @@ use Spatie\QueryBuilder\Filters\Filter as CustomFilter;
 use Spatie\QueryBuilder\Filters\FiltersExact;
 use Spatie\QueryBuilder\Filters\FiltersGreaterThan;
 use Spatie\QueryBuilder\Filters\FiltersLessThan;
+use Spatie\QueryBuilder\Filters\ExcludeFilter;
 use Spatie\QueryBuilder\Filters\FiltersPartial;
 use Spatie\QueryBuilder\Filters\FiltersScope;
 
@@ -43,6 +44,11 @@ class Filter
     public static function lt(string $property): self
     {
         return new static($property, FiltersLessThan::class);
+    }
+
+    public static function exclude(string $property): self
+    {
+        return new static($property, ExcludeFilter::class);
     }
 
     public static function partial(string $property): self

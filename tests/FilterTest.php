@@ -326,6 +326,23 @@ class FilterTest extends TestCase
         $this->assertCount(2, $modelsResult);
     }
 
+    /** @test */
+    public function it_can_exclude_filter()
+    {
+        $modelsResult = $this
+            ->createQueryFromFilterRequest([[
+                'field' => 'id',
+                'value' => '1',
+            ],[
+                'field' => 'name',
+                'value' => 'abcd',
+            ]])
+            ->allowedFilters(Filter::exact('id'), Filter::exclude('name'))
+            ->get();
+
+        $this->assertCount(1, $modelsResult);
+    }
+
     protected function createQueryFromFilterRequest(array $filterRules): QueryBuilder
     {
         $filters = collect($filterRules);
