@@ -17,7 +17,9 @@ class FiltersBetween implements Filter
                 throw InvalidFilterValueCountQuery::valueCountNotAllowed(count($value), 2);
             }
 
-            return $query->whereBetween($property, $value);
+            $dateFrom  = date($value[0]);
+            $dateTo  = date($value[1]);
+            return $query->whereBetween($property, [$dateFrom, $dateTo]);
         }
 
         throw InvalidFilterValueQuery::typesNotAllowed(collect(getType($value)), collect(['Array']));
