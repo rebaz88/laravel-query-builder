@@ -5,6 +5,8 @@ namespace Spatie\QueryBuilder\Tests;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Spatie\QueryBuilder\Exceptions\InvalidFilterQuery;
+use Spatie\QueryBuilder\Exceptions\InvalidFilterValueQuery;
+use Spatie\QueryBuilder\Exceptions\InvalidFilterValueCountQuery;
 use Spatie\QueryBuilder\Filter;
 use Spatie\QueryBuilder\Filters\Filter as CustomFilter;
 use Spatie\QueryBuilder\Filters\Filter as FilterInterface;
@@ -54,8 +56,8 @@ class FilterTest extends TestCase
     /** @test */
     public function it_can_filter_results_based_on_the_partial_existence_of_a_property_in_an_array()
     {
-        $model1 = TestModel::create(['name' => 'abcdef']);
-        $model2 = TestModel::create(['name' => 'uvwxyz']);
+        $model1 = TestModel::create(['name' => 'abcdef', 'age' => 20]);
+        $model2 = TestModel::create(['name' => 'uvwxyz', 'age' => 30]);
 
         $results = $this
             ->createQueryFromFilterRequest([[
@@ -120,7 +122,7 @@ class FilterTest extends TestCase
     /** @test */
     public function it_can_filter_and_reject_results_by_exact_property()
     {
-        $testModel = TestModel::create(['name' => 'John Testing Doe']);
+        $testModel = TestModel::create(['name' => 'John Testing Doe', 'age' => 20]);
 
         $modelsResult = $this
             ->createQueryFromFilterRequest([[
@@ -136,7 +138,7 @@ class FilterTest extends TestCase
     /** @test */
     public function it_can_filter_results_by_scope()
     {
-        $testModel = TestModel::create(['name' => 'John Testing Doe']);
+        $testModel = TestModel::create(['name' => 'John Testing Doe', 'age' => 20]);
 
         $modelsResult = $this
             ->createQueryFromFilterRequest([[
@@ -176,8 +178,8 @@ class FilterTest extends TestCase
     /** @test */
     public function it_can_allow_multiple_filters()
     {
-        $model1 = TestModel::create(['name' => 'abcdef']);
-        $model2 = TestModel::create(['name' => 'abcdef']);
+        $model1 = TestModel::create(['name' => 'abcdef', 'age' => 20]);
+        $model2 = TestModel::create(['name' => 'abcdef', 'age' => 30]);
 
         $results = $this
             ->createQueryFromFilterRequest([[
@@ -203,8 +205,8 @@ class FilterTest extends TestCase
     /** @test */
     public function it_can_allow_multiple_filters_as_an_array()
     {
-        $model1 = TestModel::create(['name' => 'abcdef']);
-        $model2 = TestModel::create(['name' => 'abcdef']);
+        $model1 = TestModel::create(['name' => 'abcdef', 'age' => 20]);
+        $model2 = TestModel::create(['name' => 'abcdef', 'age' => 30]);
 
         $results = $this
             ->createQueryFromFilterRequest([[
@@ -221,8 +223,8 @@ class FilterTest extends TestCase
     /** @test */
     public function it_can_filter_by_multiple_filters()
     {
-        $model1 = TestModel::create(['name' => 'abcdef']);
-        $model2 = TestModel::create(['name' => 'abcdef']);
+        $model1 = TestModel::create(['name' => 'abcdef', 'age' => 20]);
+        $model2 = TestModel::create(['name' => 'abcdef', 'age' => 30]);
 
         $results = $this
             ->createQueryFromFilterRequest([
@@ -274,7 +276,7 @@ class FilterTest extends TestCase
             }
         };
 
-        TestModel::create(['name' => 'abcdef']);
+        TestModel::create(['name' => 'abcdef', 'age' => 20]);
 
         $results = $this
             ->createQueryFromFilterRequest([[
@@ -325,6 +327,54 @@ class FilterTest extends TestCase
 
         $this->assertCount(2, $modelsResult);
     }
+
+    /** @test */
+    public function it_can_filter_by_between()
+    {
+
+        $model1 = TestModel::create(['name' => 'abcdef', 'age' => 35]);
+        $model2 = TestModel::create(['name' => 'abcdef', 'age' => 45]);
+        $model2 = TestModel::create(['name' => 'abcdef', 'age' => 55]);
+
+        $modelsResult = $this
+            ->createQueryFromFilterRequest([[
+                'field' => 'age',
+                'value' => '40,50',
+            ]])
+            ->allowedFilters(Filter::between('age'))
+            ->get();
+
+        $this->assertCount(1, $modelsResult);
+    }
+
+    /** @test */
+    public function it_guards_against_invalid_filter_value_types()
+    {
+        $this->expectException(InvalidFilterValueQuery::class);
+
+        $this
+            ->createQueryFromFilterRequest([[
+                'field' => 'age',
+                'value' => '40',
+            ]])
+            ->allowedFilters(Filter::between('age'))
+            ->get();
+    }
+
+    /** @test */
+    public function it_guards_against_invalid_filter_value_length()
+    {
+        $this->expectException(InvalidFilterValueCountQuery::class);
+
+        $this
+            ->createQueryFromFilterRequest([[
+                'field' => 'age',
+                'value' => '40,50,60',
+            ]])
+            ->allowedFilters(Filter::between('age'))
+            ->get();
+    }
+
 
     /** @test */
     public function it_can_exclude_filter()

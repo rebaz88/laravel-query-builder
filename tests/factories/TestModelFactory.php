@@ -6,5 +6,6 @@ use Spatie\QueryBuilder\Tests\Models\TestModel;
 $factory->define(TestModel::class, function (Faker $faker) {
     return [
         'name' => $faker->name,
+        'age'  => $faker->numberBetween(1, 20),
     ];
 });

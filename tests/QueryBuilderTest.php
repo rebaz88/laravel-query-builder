@@ -68,7 +68,7 @@ class QueryBuilderTest extends TestCase
     /** @test */
     public function it_keeps_eager_loaded_relationships_from_the_base_query()
     {
-        TestModel::create(['name' => 'John Doe']);
+        TestModel::create(['name' => 'John Doe', 'age' => 20]);
 
         $baseQuery = TestModel::with('relatedModels');
         $queryBuilder = QueryBuilder::for($baseQuery);
