@@ -5,6 +5,8 @@ namespace Spatie\QueryBuilder\Tests;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Spatie\QueryBuilder\Exceptions\InvalidFilterQuery;
+use Spatie\QueryBuilder\Exceptions\InvalidFilterValueQuery;
+use Spatie\QueryBuilder\Exceptions\InvalidFilterValueCountQuery;
 use Spatie\QueryBuilder\Filter;
 use Spatie\QueryBuilder\Filters\Filter as CustomFilter;
 use Spatie\QueryBuilder\Filters\Filter as FilterInterface;
@@ -325,6 +327,88 @@ class FilterTest extends TestCase
 
         $this->assertCount(2, $modelsResult);
     }
+
+    /** @test */
+    public function it_can_filter_by_between()
+    {
+        $model1 = TestModel::create(['name' => 'abcdef', 'age'=>'10']);
+        $model2 = TestModel::create(['name' => 'uvwxyz', 'age'=>'20']);
+
+        $modelsResult = $this
+            ->createQueryFromFilterRequest([[
+                'field' => 'age',
+                'value' => '15,30',
+            ]])
+            ->allowedFilters(Filter::between('age'))
+            ->get();
+
+        $this->assertCount(1, $modelsResult);
+    }
+
+    /** @test */
+    public function it_can_filter_by_between_date()
+    {
+        $model1 = TestModel::create(['name' => 'abcdef', 'date'=>'2000-02-01 02:00:00']);
+        $model2 = TestModel::create(['name' => 'ghijkl', 'date'=>'2000-02-03 02:00:00']);
+        $model3 = TestModel::create(['name' => 'uvwxyz', 'date'=>'2000-02-05 03:00:00']);
+
+        $modelsResult = $this
+            ->createQueryFromFilterRequest([[
+                'field' => 'date',
+                'value' => '2000-02-02,2000-02-04',
+            ]])
+            ->allowedFilters(Filter::betweenDate('date'))
+            ->get();
+
+        $this->assertCount(1, $modelsResult);
+    }
+
+    /** @test */
+    public function it_can_filter_by_between_date_time()
+    {
+        $model1 = TestModel::create(['name' => 'abcdef', 'date_time'=>'2000-02-02 02:00:00']);
+        $model2 = TestModel::create(['name' => 'ghijkl', 'date_time'=>'2000-02-04 02:00:00']);
+        $model3 = TestModel::create(['name' => 'uvwxyz', 'date_time'=>'2000-02-04 03:00:00']);
+
+        $modelsResult = $this
+            ->createQueryFromFilterRequest([[
+                'field' => 'date_time',
+                'value' => '2000-02-03 00:00:00,2000-02-04 02:00:00',
+            ]])
+            ->allowedFilters(Filter::betweenDateTime('date_time'))
+            ->get();
+
+        $this->assertCount(1, $modelsResult);
+    }
+
+    /** @test */
+    public function it_guards_against_invalid_filter_between_value_types()
+    {
+        $this->expectException(InvalidFilterValueQuery::class);
+
+        $this
+            ->createQueryFromFilterRequest([[
+                'field' => 'date_time',
+                'value' => '1980-01-01',
+            ]])
+            ->allowedFilters(Filter::between('date_time'))
+            ->get();
+    }
+
+    /** @test */
+    public function it_guards_against_invalid_filter_between_value_length()
+    {
+        $this->expectException(InvalidFilterValueCountQuery::class);
+
+        $this
+            ->createQueryFromFilterRequest([[
+                'field' => 'date_time',
+                'value' => '1980-01-01,1980-01-01,1980-01-01',
+            ]])
+            ->allowedFilters(Filter::between('date_time'))
+            ->get();
+    }
+
 
     /** @test */
     public function it_can_exclude_filter()

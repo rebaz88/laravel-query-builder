@@ -163,6 +163,21 @@ class RequestMacrosTest extends TestCase
     }
 
     /** @test */
+    public function it_can_create_filters_with_op_values_when_op_given()
+    {
+        $request = new Request([
+            'filterRules' => '[{"field":"foo","value":"bar,baz","op":"between"},{"field":"bar","value":{"foobar":"baz,bar"}}]',
+        ]);
+
+        $expected = collect([
+            "foo" =>['value' => ['bar', 'baz'], 'op' => 'between'],
+            "bar" =>['foobar' => ['baz', 'bar' ]],
+        ]);
+
+        $this->assertEquals($expected, $request->filters());
+    }
+
+    /** @test */
     public function it_will_map_comma_separated_values_as_arrays_when_given_in_a_filter_query_string_and_get_those_by_key()
     {
         $request = new Request([
