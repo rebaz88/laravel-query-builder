@@ -382,7 +382,7 @@ class FilterTest extends TestCase
     }
 
     /** @test */
-    public function it_guards_against_invalid_filter_value_types()
+    public function it_guards_against_invalid_filter_between_value_types()
     {
         $this->expectException(InvalidFilterValueQuery::class);
 
@@ -396,7 +396,7 @@ class FilterTest extends TestCase
     }
 
     /** @test */
-    public function it_guards_against_invalid_filter_value_length()
+    public function it_guards_against_invalid_filter_between_value_length()
     {
         $this->expectException(InvalidFilterValueCountQuery::class);
 
