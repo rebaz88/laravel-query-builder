@@ -60,6 +60,8 @@ class QueryBuilderServiceProvider extends ServiceProvider
             }
 
             $filters = json_decode($filterParts, true);
+            $filters_original = $filters;
+
             if (!is_array($filters)) {
                 throw InvalidJsonFilter::invalidJsonString($filterParts);
             }
@@ -93,6 +95,16 @@ class QueryBuilderServiceProvider extends ServiceProvider
             };
 
             $filters = $filters->map($filtersMapper->bindTo($filtersMapper));
+
+            foreach($filters_original as $key=>$val)
+            {
+                if ( array_key_exists('op',$val)) {
+                    $filters[$val['field']] = [
+                        'value' => $filters[$val['field']],
+                        'op' => $val['op']
+                    ];
+                }
+            }
 
             if (is_null($filter)) {
                 return $filters;

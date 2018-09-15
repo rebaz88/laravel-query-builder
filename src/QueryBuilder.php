@@ -95,17 +95,40 @@ class QueryBuilder extends Builder
     public function allowedFilters($filters): self
     {
         $filters = is_array($filters) ? $filters : func_get_args();
-        $this->allowedFilters = collect($filters)->map(function ($filter) {
+        $received_filters = $this->request->filters();
+        $this->allowedFilters = collect($filters)->map(function ($filter) use ($received_filters) {
             if ($filter instanceof Filter) {
                 return $filter;
             }
 
+            $received_filter = $received_filters->get($filter);
+            if($received_filter)
+            {
+                if (is_array($received_filter)
+                    && array_key_exists('value',$received_filter)
+                    && array_key_exists('op',$received_filter))
+                {
+                    if($received_filter['op'] == 'between')
+                    {
+                        return Filter::FiltersBetween($filter);
+                    }
+                    if($received_filter['op'] == 'dateBetween')
+                    {
+                        return Filter::betweenDate($filter);
+                    }
+                    if($received_filter['op'] == 'dateTimeBetween')
+                    {
+                        return Filter::betweenDateTime($filter);
+                    }
+
+                }
+            }
             return Filter::partial($filter);
         });
 
         $this->guardAgainstUnknownFilters();
 
-        $this->addFiltersToQuery($this->request->filters());
+        $this->addFiltersToQuery($received_filters);
 
         return $this;
     }
@@ -211,6 +234,13 @@ class QueryBuilder extends Builder
     protected function addFiltersToQuery(Collection $filters)
     {
         $filters->each(function ($value, $property) {
+
+            if(is_array($value) && array_key_exists('op',$value))
+            {
+                $op = $value['op'];
+                $value = $value['value'];
+            }
+
             $filter = $this->findFilter($property);
 
             $filter->filter($this, $value);
