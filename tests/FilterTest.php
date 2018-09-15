@@ -56,8 +56,8 @@ class FilterTest extends TestCase
     /** @test */
     public function it_can_filter_results_based_on_the_partial_existence_of_a_property_in_an_array()
     {
-        $model1 = TestModel::create(['name' => 'abcdef', 'age' => 20]);
-        $model2 = TestModel::create(['name' => 'uvwxyz', 'age' => 30]);
+        $model1 = TestModel::create(['name' => 'abcdef']);
+        $model2 = TestModel::create(['name' => 'uvwxyz']);
 
         $results = $this
             ->createQueryFromFilterRequest([[
@@ -122,7 +122,7 @@ class FilterTest extends TestCase
     /** @test */
     public function it_can_filter_and_reject_results_by_exact_property()
     {
-        $testModel = TestModel::create(['name' => 'John Testing Doe', 'age' => 20]);
+        $testModel = TestModel::create(['name' => 'John Testing Doe']);
 
         $modelsResult = $this
             ->createQueryFromFilterRequest([[
@@ -138,7 +138,7 @@ class FilterTest extends TestCase
     /** @test */
     public function it_can_filter_results_by_scope()
     {
-        $testModel = TestModel::create(['name' => 'John Testing Doe', 'age' => 20]);
+        $testModel = TestModel::create(['name' => 'John Testing Doe']);
 
         $modelsResult = $this
             ->createQueryFromFilterRequest([[
@@ -178,8 +178,8 @@ class FilterTest extends TestCase
     /** @test */
     public function it_can_allow_multiple_filters()
     {
-        $model1 = TestModel::create(['name' => 'abcdef', 'age' => 20]);
-        $model2 = TestModel::create(['name' => 'abcdef', 'age' => 30]);
+        $model1 = TestModel::create(['name' => 'abcdef']);
+        $model2 = TestModel::create(['name' => 'abcdef']);
 
         $results = $this
             ->createQueryFromFilterRequest([[
@@ -205,8 +205,8 @@ class FilterTest extends TestCase
     /** @test */
     public function it_can_allow_multiple_filters_as_an_array()
     {
-        $model1 = TestModel::create(['name' => 'abcdef', 'age' => 20]);
-        $model2 = TestModel::create(['name' => 'abcdef', 'age' => 30]);
+        $model1 = TestModel::create(['name' => 'abcdef']);
+        $model2 = TestModel::create(['name' => 'abcdef']);
 
         $results = $this
             ->createQueryFromFilterRequest([[
@@ -223,8 +223,8 @@ class FilterTest extends TestCase
     /** @test */
     public function it_can_filter_by_multiple_filters()
     {
-        $model1 = TestModel::create(['name' => 'abcdef', 'age' => 20]);
-        $model2 = TestModel::create(['name' => 'abcdef', 'age' => 30]);
+        $model1 = TestModel::create(['name' => 'abcdef']);
+        $model2 = TestModel::create(['name' => 'abcdef']);
 
         $results = $this
             ->createQueryFromFilterRequest([
@@ -276,7 +276,7 @@ class FilterTest extends TestCase
             }
         };
 
-        TestModel::create(['name' => 'abcdef', 'age' => 20]);
+        TestModel::create(['name' => 'abcdef']);
 
         $results = $this
             ->createQueryFromFilterRequest([[
@@ -331,17 +331,51 @@ class FilterTest extends TestCase
     /** @test */
     public function it_can_filter_by_between()
     {
-
-        $model1 = TestModel::create(['name' => 'abcdef', 'age' => 35]);
-        $model2 = TestModel::create(['name' => 'abcdef', 'age' => 45]);
-        $model2 = TestModel::create(['name' => 'abcdef', 'age' => 55]);
+        $model1 = TestModel::create(['name' => 'abcdef', 'age'=>'10']);
+        $model2 = TestModel::create(['name' => 'uvwxyz', 'age'=>'20']);
 
         $modelsResult = $this
             ->createQueryFromFilterRequest([[
                 'field' => 'age',
-                'value' => '40,50',
+                'value' => '15,30',
             ]])
             ->allowedFilters(Filter::between('age'))
+            ->get();
+
+        $this->assertCount(1, $modelsResult);
+    }
+
+    /** @test */
+    public function it_can_filter_by_between_date()
+    {
+        $model1 = TestModel::create(['name' => 'abcdef', 'date'=>'2000-02-01 02:00:00']);
+        $model2 = TestModel::create(['name' => 'ghijkl', 'date'=>'2000-02-03 02:00:00']);
+        $model3 = TestModel::create(['name' => 'uvwxyz', 'date'=>'2000-02-05 03:00:00']);
+
+        $modelsResult = $this
+            ->createQueryFromFilterRequest([[
+                'field' => 'date',
+                'value' => '2000-02-02,2000-02-04',
+            ]])
+            ->allowedFilters(Filter::betweenDate('date'))
+            ->get();
+
+        $this->assertCount(1, $modelsResult);
+    }
+
+    /** @test */
+    public function it_can_filter_by_between_date_time()
+    {
+        $model1 = TestModel::create(['name' => 'abcdef', 'date_time'=>'2000-02-02 02:00:00']);
+        $model2 = TestModel::create(['name' => 'ghijkl', 'date_time'=>'2000-02-04 02:00:00']);
+        $model3 = TestModel::create(['name' => 'uvwxyz', 'date_time'=>'2000-02-04 03:00:00']);
+
+        $modelsResult = $this
+            ->createQueryFromFilterRequest([[
+                'field' => 'date_time',
+                'value' => '2000-02-03 00:00:00,2000-02-04 02:00:00',
+            ]])
+            ->allowedFilters(Filter::betweenDateTime('date_time'))
             ->get();
 
         $this->assertCount(1, $modelsResult);
@@ -354,10 +388,10 @@ class FilterTest extends TestCase
 
         $this
             ->createQueryFromFilterRequest([[
-                'field' => 'age',
-                'value' => '40',
+                'field' => 'date_time',
+                'value' => '1980-01-01',
             ]])
-            ->allowedFilters(Filter::between('age'))
+            ->allowedFilters(Filter::between('date_time'))
             ->get();
     }
 
@@ -368,10 +402,10 @@ class FilterTest extends TestCase
 
         $this
             ->createQueryFromFilterRequest([[
-                'field' => 'age',
-                'value' => '40,50,60',
+                'field' => 'date_time',
+                'value' => '1980-01-01,1980-01-01,1980-01-01',
             ]])
-            ->allowedFilters(Filter::between('age'))
+            ->allowedFilters(Filter::between('date_time'))
             ->get();
     }
 

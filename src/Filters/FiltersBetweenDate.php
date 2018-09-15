@@ -7,7 +7,7 @@ use Spatie\QueryBuilder\Exceptions\InvalidFilterValueQuery;
 use Spatie\QueryBuilder\Exceptions\InvalidFilterValueCountQuery;
 
 
-class FiltersBetween implements Filter
+class FiltersBetweenDate implements Filter
 {
     public function __invoke(Builder $query, $value, string $property): Builder
     {
@@ -20,7 +20,9 @@ class FiltersBetween implements Filter
             throw InvalidFilterValueCountQuery::valueCountNotAllowed(count($value), 2);
         }
 
-        return $query->whereBetween($property, $value);
+        $from = (new \DateTime($value[0]))->setTime(0,0,0,0);
+        $to   = (new \DateTime($value[1]))->setTime(0,0,0,0);
 
+        return $query->whereBetween($property, [$from, $to]);
     }
 }
