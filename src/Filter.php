@@ -7,6 +7,9 @@ use Spatie\QueryBuilder\Filters\Filter as CustomFilter;
 use Spatie\QueryBuilder\Filters\FiltersExact;
 use Spatie\QueryBuilder\Filters\FiltersGreaterThan;
 use Spatie\QueryBuilder\Filters\FiltersLessThan;
+use Spatie\QueryBuilder\Filters\FiltersBetween;
+use Spatie\QueryBuilder\Filters\FiltersBetweenDate;
+use Spatie\QueryBuilder\Filters\FiltersBetweenDateTime;
 use Spatie\QueryBuilder\Filters\ExcludeFilter;
 use Spatie\QueryBuilder\Filters\FiltersPartial;
 use Spatie\QueryBuilder\Filters\FiltersScope;
@@ -44,6 +47,21 @@ class Filter
     public static function lt(string $property): self
     {
         return new static($property, FiltersLessThan::class);
+    }
+
+    public static function between(string $property): self
+    {
+        return new static($property, FiltersBetween::class);
+    }
+
+    public static function betweenDate(string $property): self
+    {
+        return new static($property, FiltersBetweenDate::class);
+    }
+
+    public static function betweenDateTime(string $property): self
+    {
+        return new static($property, FiltersBetweenDateTime::class);
     }
 
     public static function exclude(string $property): self

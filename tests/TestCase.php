@@ -24,6 +24,9 @@ class TestCase extends Orchestra
             $table->increments('id');
             $table->timestamps();
             $table->string('name');
+            $table->integer('age')->nullable();
+            $table->date('date')->nullable();
+            $table->dateTime('date_time')->nullable();
         });
 
         $app['db']->connection()->getSchemaBuilder()->create('append_models', function (Blueprint $table) {
